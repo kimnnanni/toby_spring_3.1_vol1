@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="com.springsource.javax.activation-1.1.0">
+  <library name="com.springsource.javax.activation-1.1.01">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/Libs/lib/com.springsource.javax.activation-1.1.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/Libs/lib/com.springsource.javax.mail-1.4.0.jar!/" />
