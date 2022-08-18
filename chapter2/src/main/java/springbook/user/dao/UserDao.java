@@ -18,6 +18,8 @@ public class UserDao {
         this.connectionMaker = connectionMaker;
     }
 
+    public UserDao() {}
+
     public void add(User user) throws ClassNotFoundException, SQLException {
         Connection c = dataSource.getConnection();
     }
