@@ -10,6 +10,12 @@ public class UserDao {
     private DataSource dataSource;
     private ConnectionMaker connectionMaker;
 
+    private JdbcContext jdbcContext;
+
+    public void setJdbcContext(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
+    }
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -47,7 +53,7 @@ public class UserDao {
 //        };
 //        jdbcContextWithStatementStrategy(st);
 
-        jdbcContextWithStatementStrategy(
+        this.jdbcContext.workWithStatementStrategy(
             new StatementStrategy() {
                 @Override
                 public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
@@ -90,7 +96,7 @@ public class UserDao {
     public void deleteAll() throws SQLException {
 //        StatementStrategy st = new DeleteAllStatement();
 //        jdbcContextWithStatementStrategy(st);
-        jdbcContextWithStatementStrategy(
+        this.jdbcContext.workWithStatementStrategy(
             new StatementStrategy() {
                 @Override
                 public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
