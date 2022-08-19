@@ -94,17 +94,21 @@ public class UserDao {
     //public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
 
     public void deleteAll() throws SQLException {
-//        StatementStrategy st = new DeleteAllStatement();
-//        jdbcContextWithStatementStrategy(st);
+        //executeSql("delete from users");
+        this.jdbcContext.executeSql("delete from users");
+    }
+
+    private void executeSql(final String sql) throws SQLException {
         this.jdbcContext.workWithStatementStrategy(
             new StatementStrategy() {
                 @Override
                 public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
-                    return c.prepareStatement("delete from users");
+                    return c.prepareStatement(sql);
                 }
             }
         );
     }
+
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
