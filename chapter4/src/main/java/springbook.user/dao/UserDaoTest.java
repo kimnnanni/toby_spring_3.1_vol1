@@ -26,7 +26,7 @@ public class UserDaoTest {
 //    @Autowired
 //    private ApplicationContext context;
 
-    UserDao dao;
+    UserDaoJdbc dao;
     private User user1;
     private User user2;
     private User user3;
@@ -35,7 +35,7 @@ public class UserDaoTest {
     public void setUp() {
 //        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
 //        this.dao = this.context.getBean("userDao", UserDao.class);
-        dao = new UserDao();
+        dao = new UserDaoJdbc();
 
         DataSource dataSource = new SingleConnectionDataSource("jdbc:mysql://localhost/testdb", "spring", "book", true);
         dao.setDataSource(dataSource);
