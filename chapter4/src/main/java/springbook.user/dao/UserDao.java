@@ -1,5 +1,6 @@
 package springbook.user.dao;
 
+import com.mysql.jdbc.MysqlErrorNumbers;
 import org.springframework.dao.EmptyResultDataAccessException;
 import springbook.user.domain.User;
 
@@ -66,6 +67,17 @@ public class UserDao {
                 }
             }
         );
+    }
+
+    public void add() throws DuplicateUserIdException {
+        try {
+            executeSql("test");
+        } catch(SQLException e) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY)
+                throw new DuplicateUserIdException(e);
+            else
+                throw new RuntimeException(e);
+        }
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
