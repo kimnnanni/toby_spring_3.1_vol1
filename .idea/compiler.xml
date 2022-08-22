@@ -22,7 +22,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="chapter1" options="-parameters" />
       <module name="chapter2" options="-parameters" />
-      <module name="chapter3" options="" />
+      <module name="chapter3" options="-parameters" />
       <module name="chapter4" options="-parameters" />
     </option>
   </component>
