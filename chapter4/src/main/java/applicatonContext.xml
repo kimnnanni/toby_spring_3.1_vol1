@@ -5,7 +5,7 @@
 
     <bean id="connectionMaker" class="springbook.user.dao.DConnectionMaker" />
 
-    <bean id="userDao" class="springbook.user.dao.UserDao">
+    <bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
         <property name="connectionMaker" ref="connectionMaker" />
     </bean>
 </beans>
