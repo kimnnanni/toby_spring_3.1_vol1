@@ -1,6 +1,10 @@
 package springbook.user.dao;
 
+import org.junit.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
@@ -14,6 +18,8 @@ public class UserDaoJdbc {
     private ConnectionMaker connectionMaker;
 
     private JdbcContext jdbcContext;
+
+    private JdbcTemplate jdbcTemplate;
 
     public void setJdbcContext(JdbcContext jdbcContext) {
         this.jdbcContext = jdbcContext;
@@ -29,54 +35,50 @@ public class UserDaoJdbc {
 
     public UserDaoJdbc() {}
 
-    public void add(final User user) throws ClassNotFoundException, SQLException {
-//        Connection c = dataSource.getConnection();
-//        class AddStatemenet implements StatementStrategy {
-//            public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
-//                PreparedStatement ps = c.prepareStatement("insert into user(id, name, password) values(?,?,?)");
-//                ps.setString(1, user.getId());
-//                ps.setString(2, user.getName());
-//                ps.setString(3, user.getPassword());
-//
-//                return ps;
-//            }
-//        }
-//
-//        //StatementStrategy st = new AddStatement(user);
-//        StatementStrategy st = new StatementStrategy() {
-//            @Override
-//            public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
-//                PreparedStatement ps = c.prepareStatement("insert into user(id, name, password) values(?,?,?)");
-//                ps.setString(1, user.getId());
-//                ps.setString(2, user.getName());
-//                ps.setString(3, user.getPassword());
-//
-//                return ps;
-//            }
-//        };
-//        jdbcContextWithStatementStrategy(st);
-
-        this.jdbcContext.workWithStatementStrategy(
-            new StatementStrategy() {
-                @Override
-                public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
-                    PreparedStatement ps = c.prepareStatement("insert into user(id, name, password) values(?,?,?)");
-                    ps.setString(1, user.getId());
-                    ps.setString(2, user.getName());
-                    ps.setString(3, user.getPassword());
-
-                    return ps;
-                }
+    private RowMapper<User> userRowMapper =
+        new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet resultSet, int i) throws SQLException {
+                User user = new User();
+                user.setId(resultSet.getString("id"));
+                user.setName(resultSet.getString("name"));
+                user.setPassword(resultSet.getString("password"));
+                user.setLevel(Level.valueOf(resultSet.getInt("level")));
+                user.setLogin(resultSet.getInt("login"));
+                user.setRecommend(resultSet.getInt("recommend"));
+                return user;
             }
+        };
+
+    public void add(User user) {
+        this.jdbcTemplate.update(
+        "insert into users(id, name, password, level, login, recommend) " +
+            "values(?,?,?,?,?,?)", user.getId(), user.getName(),
+            user.getPassword(), user.getLevel().intValue(),
+            user.getLogin(), user.getRecommend()
         );
     }
+
+//    public void add(final User user) throws ClassNotFoundException, SQLException {
+//
+//        this.jdbcContext.workWithStatementStrategy(
+//            new StatementStrategy() {
+//                @Override
+//                public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
+//                    PreparedStatement ps = c.prepareStatement("insert into user(id, name, password) values(?,?,?)");
+//                    ps.setString(1, user.getId());
+//                    ps.setString(2, user.getName());
+//                    ps.setString(3, user.getPassword());
+//
+//                    return ps;
+//                }
+//            }
+//        );
+//    }
 
     public void add() throws DuplicateUserIdException {
         try {
             executeSql("test");
-//        } catch (DuplicateKeyException e) {
-//            throw new DuplicateKeyException(e);
-//        }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
