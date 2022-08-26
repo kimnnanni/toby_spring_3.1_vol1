@@ -12,8 +12,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
-public class UserDaoJdbc {
+public class UserDaoJdbc implements UserDao {
     private DataSource dataSource;
     private ConnectionMaker connectionMaker;
 
@@ -59,23 +60,6 @@ public class UserDaoJdbc {
         );
     }
 
-//    public void add(final User user) throws ClassNotFoundException, SQLException {
-//
-//        this.jdbcContext.workWithStatementStrategy(
-//            new StatementStrategy() {
-//                @Override
-//                public PreparedStatement makePreparedStatment(Connection c) throws SQLException {
-//                    PreparedStatement ps = c.prepareStatement("insert into user(id, name, password) values(?,?,?)");
-//                    ps.setString(1, user.getId());
-//                    ps.setString(2, user.getName());
-//                    ps.setString(3, user.getPassword());
-//
-//                    return ps;
-//                }
-//            }
-//        );
-//    }
-
     public void add() throws DuplicateUserIdException {
         try {
             executeSql("test");
@@ -84,7 +68,7 @@ public class UserDaoJdbc {
         }
     }
 
-    public User get(String id) throws ClassNotFoundException, SQLException {
+    public User get(String id) throws SQLException, ClassNotFoundException {
         Connection c = connectionMaker.makeConnection();
 
         PreparedStatement ps = c.prepareStatement("");
@@ -105,6 +89,11 @@ public class UserDaoJdbc {
         if(user == null) throw new EmptyResultDataAccessException(1);
 
         return user;
+    }
+
+    @Override
+    public List<User> getAll() {
+        return null;
     }
 
     //public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
@@ -154,6 +143,19 @@ public class UserDaoJdbc {
         c.close();
 
         return count;
+    }
+
+    public void update(User user) {
+        this.jdbcTemplate.update(
+                "update users set name=?, password=?, level=?, login=?, recommend=? " +
+                    "where id=?"
+                , user.getName()
+                , user.getPassword()
+                , user.getLevel()
+                , user.getLogin()
+                , user.getRecommend()
+                , user.getId()
+        );
     }
 
 //    protected abstract PreparedStatement makeStatement(Connection c) throws SQLException;

@@ -10,6 +10,10 @@
         <property name="jdbcContext" ref="jdbcContext"/>
     </bean>
 
+    <bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="jdbcContext" class="springbook.user.dao.JdbcContext">
         <property name="dataSource" ref="dataSource"/>
     </bean>

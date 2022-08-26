@@ -2,12 +2,14 @@ package springbook.user.dao;
 
 import springbook.user.domain.User;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface UserDao {
     void add(User user);
-    User get(String id);
+    public User get(String id) throws SQLException, ClassNotFoundException;
     List<User> getAll();
-    void deleteAll();
-    int getCount();
+    public void deleteAll() throws SQLException;
+    public int getCount() throws SQLException;
+    void update(User user);
 }
