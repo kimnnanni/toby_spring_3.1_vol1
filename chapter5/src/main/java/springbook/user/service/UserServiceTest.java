@@ -18,6 +18,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
@@ -51,7 +52,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeLevels() throws SQLException, ClassNotFoundException {
+    private void upgradeLevels() throws SQLException, ClassNotFoundException {
         userDao.deleteAll();
         for(User user : users) userDao.add(user);
 
@@ -99,5 +100,23 @@ public class UserServiceTest {
 
         assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
         assertThat(userWithoutLevelRead.getLevel(), is(userWithoutLevel.getLevel()));
+    }
+
+    @Test
+    public void upgradeAllOrNothing() throws SQLException, ClassNotFoundException {
+        UserService testUserService = new TestUserService(users.get(3).getId());
+        testUserService.setUserDao(this.userDao);
+
+        userDao.deleteAll();
+        for(User user : users) userDao.add(user);
+
+        try{
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        } catch (TestUserServiceException e) {
+
+        }
+
+        checkLevelUpgrade(users.get(1), false);
     }
 }

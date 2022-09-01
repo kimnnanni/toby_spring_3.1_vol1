@@ -52,7 +52,7 @@ public class UserService {
         }
     }
 
-    private void upgradeLevel(User user) {
+    protected void upgradeLevel(User user) {
 //        //1차 구현
 //        if(user.getLevel() == Level.BASIC) user.setLevel(Level.SILVER);
 //        else if(user.getLevel() == Level.SILVER) user.setLevel(Level.GOLD);
