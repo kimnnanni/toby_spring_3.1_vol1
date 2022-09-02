@@ -11,6 +11,7 @@ import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,9 @@ public class UserServiceTest {
     UserDao userDao;
 
     List<User> users;
+
+    @Autowired
+    DataSource dataSource;
 
     @Test
     @Ignore
@@ -52,7 +56,7 @@ public class UserServiceTest {
     }
 
     @Test
-    private void upgradeLevels() throws SQLException, ClassNotFoundException {
+    private void upgradeLevels() throws Exception {
         userDao.deleteAll();
         for(User user : users) userDao.add(user);
 
@@ -103,9 +107,10 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeAllOrNothing() throws SQLException, ClassNotFoundException {
+    public void upgradeAllOrNothing() throws Exception {
         UserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
+        testUserService.setDataSource(this.dataSource);
 
         userDao.deleteAll();
         for(User user : users) userDao.add(user);
@@ -115,6 +120,8 @@ public class UserServiceTest {
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
 
+        } catch (Exception e) {
+            throw e;
         }
 
         checkLevelUpgrade(users.get(1), false);

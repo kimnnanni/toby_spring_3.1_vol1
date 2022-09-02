@@ -1,9 +1,17 @@
 package springbook.user.service;
 
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -13,33 +21,57 @@ public class UserService {
     public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
     public static final int MIN_RECCOMEND_FOR_GOLD = 30;
 
+    private DataSource dataSource;
+
     public void setUserDao(UserDao userDao) {
         this.userDao = userDao;
     }
 
-    public void upgradeLevels() {
-//        //1차 구현
-//        List<User> users = userDao.getAll();
-//        for(User user : users) {
-//            Boolean changed = null;
-//            if(user.getLevel() == Level.BASIC && user.getLogin() >= 50) {
-//                user.setLevel(Level.SILVER);
-//                changed = true;
-//            }
-//            else if(user.getLevel() == Level.SILVER && user.getRecommend() >= 30) {
-//                user.setLevel(Level.GOLD);
-//                changed = true;
-//            }
-//            else if(user.getLevel() == Level.GOLD) { changed = false; }
-//            else { changed = false; }
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public void upgradeLevels() throws Exception {
+//        TransactionSynchronizationManager.initSynchronization(); //트랜잭션 동기화 관리자를 이용해 동기화 작업 초기화
+//        //DB 커넥션 생성하고 트랜잭션 시작. 이후의 DAO 작업은 모두 여기서 시작한 트랜잭션 안에서 진행
+//        Connection c = DataSourceUtils.getConnection(dataSource);
+//        c.setAutoCommit(false);
 //
-//            if(changed) userDao.update(user);
+//        try {
+//            List<User> users = userDao.getAll();
+//            for (User user : users)
+//                if (canUpgradeLevel(user))
+//                    upgradeLevel(user);
+//
+//            c.commit(); //성공시 커밋
+//        } catch (Exception e) {
+//            c.rollback(); //예외 발생시 롤백
+//            throw e;
+//        } finally {
+//            DataSourceUtils.releaseConnection(c, dataSource); //스프링 유틸리티 메소드를 이요해 DB 커넥션 닫기
+//            //동기화 작업 종료 및 정리
+//            TransactionSynchronizationManager.unbindResource(this.dataSource);
+//            TransactionSynchronizationManager.clearSynchronization();
 //        }
-//        2차 리팩토링
-        List<User> users = userDao.getAll();
-        for(User user : users)
-            if(canUpgradeLevel(user))
-                upgradeLevel(user);
+
+        //2. 글로벌 트랜잭션
+
+        //3. 스프링의 트랜잭션 추상화
+        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource); //JDBC 트랜잭션 추상 오브잭트 생성
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition()); //트랜잭션 시작
+        //트랜잭션 기술 설정의 분리
+
+        try {
+            List<User> users = userDao.getAll();
+            for(User user : users) {
+                if(canUpgradeLevel(user))
+                    upgradeLevel(user);
+            }
+            transactionManager.commit(status);
+        } catch (RuntimeException e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
     }
 
     private boolean canUpgradeLevel(User user) {
@@ -53,10 +85,6 @@ public class UserService {
     }
 
     protected void upgradeLevel(User user) {
-//        //1차 구현
-//        if(user.getLevel() == Level.BASIC) user.setLevel(Level.SILVER);
-//        else if(user.getLevel() == Level.SILVER) user.setLevel(Level.GOLD);
-//        //2차 리팩토링
         user.upgradeLevel();
         userDao.update(user);
     }
