@@ -1,6 +1,9 @@
 package springbook.user.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import springbook.user.domain.User;
+
+import javax.sql.DataSource;
 
 public class TestUserService extends UserService {
     private String id;
