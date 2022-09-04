@@ -5,6 +5,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailSender;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -39,6 +41,9 @@ public class UserServiceTest {
     @Autowired
     PlatformTransactionManager transactionManager;
 
+    @Autowired
+    MailSender mailSender;
+
     @Test
     @Ignore
     public void bean() {
@@ -60,24 +65,30 @@ public class UserServiceTest {
     }
 
     @Test
+    @DirtiesContext //컨텍스트의 DI 설정을 변경하는 테스트라는 것을 알려준다.
     private void upgradeLevels() throws Exception {
         userDao.deleteAll();
         for(User user : users) userDao.add(user);
 
-        userService.upgradeLevels();
+        //메일 발송 결과를 테스트할 수 있도록 목 오브젝트를 만들어 userService의 의존 오브젝트로 주입해준다.
+        MockMailSender mockMailSender = new MockMailSender();
+        userService.setMailSender(mockMailSender);
 
-//        //1차 구현
-//        checkLevel(users.get(0), Level.BASIC);
-//        checkLevel(users.get(1), Level.SILVER);
-//        checkLevel(users.get(2), Level.SILVER);
-//        checkLevel(users.get(3), Level.GOLD);
-//        checkLevel(users.get(4), Level.GOLD);
+        //업그레이드 테스트.
+        //메일 발송이 일어나면 MockMailSender 오브젝트의 리스트에 그 결과가 저장된다.
+        userService.upgradeLevels();
 
         checkLevelUpgrade(users.get(0), false);
         checkLevelUpgrade(users.get(1), true);
         checkLevelUpgrade(users.get(2), false);
         checkLevelUpgrade(users.get(3), true);
         checkLevelUpgrade(users.get(4), false);
+
+        //목 오브젝트에 저장된 메일 수신자 목록을 가져와 업그레이드 대상과 일치하는지 확인한다.
+        List<String> request = mockMailSender.getRequests();
+        assertThat(request.size(), is(2));
+        assertThat(request.get(0), is(users.get(1).getEmail()));
+        assertThat(request.get(1), is(users.get(3).getEmail()));
     }
 
     private void checkLevelUpgrade(User user, boolean upgraded) throws SQLException, ClassNotFoundException {
@@ -114,8 +125,8 @@ public class UserServiceTest {
     public void upgradeAllOrNothing() throws Exception {
         UserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(this.userDao);
-//        testUserService.setDataSource(this.dataSource);
         testUserService.setTransactionManager(this.transactionManager); //userService 빈의 프로퍼티 설정과 동일한 수동 DI
+        testUserService.setMailSender(this.mailSender);
 
         userDao.deleteAll();
         for(User user : users) userDao.add(user);
