@@ -23,6 +23,12 @@ public class UserService {
 
     private DataSource dataSource;
 
+    private PlatformTransactionManager transactionManager;
+
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
     public void setUserDao(UserDao userDao) {
         this.userDao = userDao;
     }
@@ -56,10 +62,12 @@ public class UserService {
 
         //2. 글로벌 트랜잭션
 
-        //3. 스프링의 트랜잭션 추상화
-        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource); //JDBC 트랜잭션 추상 오브잭트 생성
-        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition()); //트랜잭션 시작
+//        //3. 스프링의 트랜잭션 추상화
+//        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource); //JDBC 트랜잭션 추상 오브잭트 생성
+//        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition()); //트랜잭션 시작
+
         //트랜잭션 기술 설정의 분리
+        TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
             List<User> users = userDao.getAll();
