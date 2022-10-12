@@ -2,6 +2,7 @@ package springbook.user.service;
 
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import springbook.user.dao.MockUserDao;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
@@ -19,7 +20,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void upgradeLevels() {
-        List<User> users = userDao.getAll();
+        List<User> users = userDao.getAll(); //업그레이드 후보 사용자 목록을 가져온다.
         for (User user : users) {
             if (canUpgradeLevel(user))
                 upgradeLevel(user);
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
     protected void upgradeLevel(User user) {
         user.upgradeLevel();
-        this.userDao.update(user);
+        this.userDao.update(user); //수정된 사용자 정보를 DB에 반영한다.
         this.sendUpgradeEMail(user);
     }
 
